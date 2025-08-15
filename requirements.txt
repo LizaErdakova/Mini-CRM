@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+sqlalchemy
+mysqlclient
+pydantic[email]
+pydantic-settings
+python-dotenv
+pytest 

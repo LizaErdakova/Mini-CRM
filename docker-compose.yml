@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crm_user
+      MYSQL_PASSWORD: crm_pass
+    ports: ["3306:3306"]
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata: 
