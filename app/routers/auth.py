@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from datetime import datetime
 
 from app.schemas.user import UserOut, UserLogin
+from app.schemas.events import UserLoggedInEvent
 from app.dependencies import get_db
 from app.auth import authenticate_user, create_session_token, get_current_user
 from app.models.user import User
+from app.core.kafka_producer import send_event
+from app.core.config import settings
 
 router = APIRouter(tags=["auth"])
 security = HTTPBasic()
@@ -32,6 +36,14 @@ def login(user_data: UserLogin, response: Response, db: Session = Depends(get_db
         samesite="lax",
         max_age=3600 * 24 * 7,  # 7 дней
     )
+    
+    # Отправка события в Kafka
+    event = UserLoggedInEvent(
+        user_id=user.id,
+        email=user.email,
+        timestamp=datetime.now().isoformat()
+    )
+    send_event(settings.KAFKA_TOPIC_USER_EVENTS, event.dict())
     
     return {"message": "Вход выполнен успешно"}
 

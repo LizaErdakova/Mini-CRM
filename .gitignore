@@ -7,17 +7,34 @@ ENV/
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # База данных
 *.db
 *.sqlite3
+test.db
 
 # Локальные настройки
 .env
+.env.local
 
 # IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# Docker
+.docker/
+
+# Логи
+*.log
 
 # Другое
-.DS_Store 
+.DS_Store
+Thumbs.db
+
+# Временные файлы проекта
+KAFKA_IMPLEMENTATION_PLAN.md
+Проект FastApi.md 

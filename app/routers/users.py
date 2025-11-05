@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.schemas.user import UserCreate, UserOut
+from app.schemas.events import UserCreatedEvent
 from app.models.user import User
 from app.dependencies import get_db
+from app.core.kafka_producer import send_event
+from app.core.config import settings
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -26,6 +30,17 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Отправка события в Kafka
+    event = UserCreatedEvent(
+        user_id=db_user.id,
+        email=db_user.email,
+        name=db_user.name,
+        age=db_user.age,
+        is_admin=db_user.is_admin,
+        timestamp=datetime.now().isoformat()
+    )
+    send_event(settings.KAFKA_TOPIC_USER_EVENTS, event.dict())
     
     return db_user
 

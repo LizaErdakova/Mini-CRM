@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import datetime
 
 from app.schemas.course import CourseCreate, CourseOut
+from app.schemas.events import CourseCreatedEvent
 from app.models.course import Course
 from app.dependencies import get_db
 from app.auth import get_current_user
 from app.models.user import User
+from app.core.kafka_producer import send_event
+from app.core.config import settings
 
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -31,6 +35,16 @@ def create_course(
     db.add(db_course)
     db.commit()
     db.refresh(db_course)
+    
+    # Отправка события в Kafka
+    event = CourseCreatedEvent(
+        course_id=db_course.id,
+        title=db_course.title,
+        price=float(db_course.price),
+        created_by=current_user.id,
+        timestamp=datetime.now().isoformat()
+    )
+    send_event(settings.KAFKA_TOPIC_COURSE_EVENTS, event.dict())
     
     return db_course
 

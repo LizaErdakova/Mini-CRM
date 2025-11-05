@@ -5,4 +5,5 @@ mysqlclient
 pydantic[email]
 pydantic-settings
 python-dotenv
-pytest 
+pytest
+kafka-python 
